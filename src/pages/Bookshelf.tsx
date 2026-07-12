@@ -295,20 +295,35 @@ export default function Bookshelf() {
                   setEditBookData(null);
                   setIsAddModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-medium bg-[#5B7E71] text-white hover:brightness-105 active:scale-[0.97] transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-9 px-4 bg-[#5B7E71] text-white rounded-[10px] text-sm font-medium hover:brightness-105 hover:scale-[1.02] active:scale-[0.97] transition-all cursor-pointer shadow-sm"
               >
                 <Plus size={16} />
-                <span className="hidden md:inline">添加</span>
+                <span className="hidden md:inline">添加书籍</span>
               </button>
             </motion.div>
           </div>
 
-          {/* Status Tabs */}
-          <StatusTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            counts={tabCounts}
-          />
+          {/* Mobile Search */}
+          <div className="sm:hidden pb-3">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9B8E]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索书名、作者…"
+                className="w-full h-10 pl-9 pr-8 text-sm bg-[#F0F0F0] border border-[#E2E0D8] rounded-full text-[#2C2C2C] placeholder:text-[#9B9B8E] focus:outline-none focus:ring-2 focus:ring-[#5B7E71]/30 focus:border-[#5B7E71] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B9B8E] hover:text-[#6B6B6B] cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -316,125 +331,138 @@ export default function Bookshelf() {
       <AnimatePresence>
         {showFilters && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden border-b border-[#E2E0D8]"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden bg-[#F5F4EE] border-b border-[#E2E0D8]"
           >
             <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-4">
-              {/* Sort */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-sm text-[#6B6B6B]">排序</span>
-                <div className="flex gap-1.5">
-                  {(Object.keys(sortLabels) as SortOption[]).map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => setSortBy(option)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-full text-sm transition-all cursor-pointer',
-                        sortBy === option
-                          ? 'bg-[#5B7E71]/12 text-[#5B7E71] border border-[#5B7E71]/30'
-                          : 'bg-[#F0F0F0] text-[#6B6B6B] border border-[#E2E0D8] hover:border-[#D0CEC6]'
-                      )}
-                    >
-                      {sortLabels[option]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tags */}
-              {allTags.length > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-[#6B6B6B]">标签</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {allTags.map((tag) => (
+              <div className="flex flex-wrap items-center gap-6">
+                {/* Sort */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] text-[#6B6B6B]">排序</span>
+                  <div className="flex gap-1">
+                    {(Object.keys(sortLabels) as SortOption[]).map((opt) => (
                       <button
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
+                        key={opt}
+                        onClick={() => setSortBy(opt)}
                         className={cn(
-                          'px-3 py-1 rounded-full text-sm transition-all cursor-pointer',
-                          selectedTags.includes(tag)
-                            ? 'bg-[#6B8FAD]/12 text-[#6B8FAD] border border-[#6B8FAD]/30'
-                            : 'bg-[#F0F0F0] text-[#6B6B6B] border border-[#E2E0D8] hover:border-[#D0CEC6]'
+                          'px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer',
+                          sortBy === opt
+                            ? 'bg-[#5B7E71]/12 text-[#5B7E71]'
+                            : 'text-[#6B6B6B] hover:bg-[#F0F0F0]'
                         )}
                       >
-                        {tag}
+                        {sortLabels[opt]}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+
+                {/* Tags */}
+                {allTags.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] text-[#6B6B6B]">标签</span>
+                    <div className="flex flex-wrap gap-1">
+                      {allTags.map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => toggleTag(tag)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer border',
+                            selectedTags.includes(tag)
+                              ? 'bg-[#6B8FAD]/15 text-[#6B8FAD] border-[#6B8FAD]/30'
+                              : 'bg-transparent text-[#6B6B6B] border-[#E2E0D8] hover:border-[#D0CEC6]'
+                          )}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Clear Filters */}
+                {(selectedTags.length > 0 || sortBy !== 'recent') && (
+                  <button
+                    onClick={() => {
+                      setSelectedTags([]);
+                      setSortBy('recent');
+                    }}
+                    className="text-[12px] text-[#C47C7C] hover:underline cursor-pointer"
+                  >
+                    清除筛选
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Content Area */}
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-6">
-        {/* Mobile Search */}
-        <div className="sm:hidden mb-4">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9B8E]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索书名、作者…"
-              className="w-full h-10 pl-9 pr-8 text-sm bg-[#F0F0F0] border border-[#E2E0D8] rounded-full text-[#2C2C2C] placeholder:text-[#9B9B8E] focus:outline-none focus:ring-2 focus:ring-[#5B7E71]/30 focus:border-[#5B7E71] transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B9B8E] hover:text-[#6B6B6B]"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
+      {/* Main Content */}
+      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-8">
+        {/* Status Tabs */}
+        <StatusTabs activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
 
         {/* Book Grid/List */}
-        {filteredBooks.length > 0 ? (
-          <AnimatePresence mode="popLayout">
-            {viewMode === 'grid' ? (
-              <motion.div
-                layout
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5"
-              >
-                {filteredBooks.map((book, index) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    index={index}
-                    onOpenDetail={handleOpenDetail}
-                    onEdit={handleEditBook}
-                    onDelete={handleDeleteBook}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div layout className="flex flex-col gap-3">
-                {filteredBooks.map((book, index) => (
-                  <ListBookCard
-                    key={book.id}
-                    book={book}
-                    index={index}
-                    onOpenDetail={handleOpenDetail}
-                    onEdit={handleEditBook}
-                    onDelete={handleDeleteBook}
-                  />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        ) : (
-          <EmptyState
-            type={activeTab}
-            hasSearch={!!searchQuery || selectedTags.length > 0}
-          />
+        <AnimatePresence mode="wait">
+          {filteredBooks.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <EmptyState onAddBook={() => { setEditBookData(null); setIsAddModalOpen(true); }} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`${activeTab}-${viewMode}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredBooks.map((book, i) => (
+                    <BookCard
+                      key={book.id}
+                      book={book}
+                      index={i}
+                      onOpenDetail={handleOpenDetail}
+                      onEdit={handleEditBook}
+                      onDelete={handleDeleteBook}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredBooks.map((book, i) => (
+                    <ListBookCard
+                      key={book.id}
+                      book={book}
+                      index={i}
+                      onOpenDetail={handleOpenDetail}
+                      onEdit={handleEditBook}
+                      onDelete={handleDeleteBook}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Results count */}
+        {filteredBooks.length > 0 && (
+          <p className="text-[12px] text-[#9B9B8E] mt-6 text-center">
+            共 {filteredBooks.length} 本书
+          </p>
         )}
       </div>
 
@@ -452,22 +480,18 @@ export default function Bookshelf() {
       <BookDetailDrawer
         book={detailBook}
         isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        onEdit={handleEditBook}
+        onClose={() => { setIsDetailOpen(false); setDetailBook(null); }}
+        onEdit={(book) => { setIsDetailOpen(false); handleEditBook(book); }}
         onDelete={handleDeleteBook}
         onStatusChange={handleStatusChange}
         onUpdateBook={handleUpdateBook}
       />
 
       <DeleteConfirmDialog
+        book={deleteBookData}
         isOpen={isDeleteOpen}
-        onClose={() => {
-          setIsDeleteOpen(false);
-          setDeleteBookData(null);
-        }}
+        onClose={() => { setIsDeleteOpen(false); setDeleteBookData(null); }}
         onConfirm={handleConfirmDelete}
-        title="确认删除"
-        description={`确定要删除《${deleteBookData?.title}》吗？此操作不可撤销。`}
       />
     </motion.div>
   );
@@ -597,3 +621,6 @@ function ListBookCard({
     </motion.div>
   );
 }
+
+
+
