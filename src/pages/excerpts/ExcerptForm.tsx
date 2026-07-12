@@ -273,94 +273,110 @@ export default function ExcerptForm({ books, existingTags, editingExcerpt, onSav
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-[8px] outline-none transition-all duration-150 resize-none"
+            className="w-full px-4 py-3 rounded-[8px] outline-none transition-all duration-150 resize-none focus:ring-2"
             style={{
               backgroundColor: '#F8F6F0',
               border: '1px solid #E2E0D8',
+              borderLeftWidth: '3px',
+              borderLeftColor: '#5B7E71',
               color: '#2C2C2C',
               minHeight: '120px',
-              fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif',
-              fontSize: '16px',
+              maxHeight: '300px',
+              fontSize: '17px',
               lineHeight: 1.7,
               letterSpacing: '0.01em',
+              fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif',
             }}
           />
-          <div className="absolute bottom-2 right-2">
+          <div className="absolute bottom-3 right-3">
             <VoiceRecorder onTranscript={handleVoiceTranscript} />
           </div>
         </div>
 
-        {/* AI suggested tags */}
+        {/* Thought textarea */}
+        <textarea
+          placeholder="你的感想...（可选）"
+          value={thought}
+          onChange={(e) => setThought(e.target.value)}
+          className="w-full px-4 py-3 rounded-[8px] outline-none transition-all duration-150 resize-none mb-4 focus:ring-2"
+          style={{
+            backgroundColor: '#F8F6F0',
+            border: '1px solid #E2E0D8',
+            color: '#2C2C2C',
+            minHeight: '80px',
+            maxHeight: '200px',
+            fontSize: '15px',
+            lineHeight: 1.65,
+            letterSpacing: '0.01em',
+            fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif',
+          }}
+        />
+
+        {/* Smart tag suggestions */}
         <AnimatePresence>
-          {suggestedTags.length > 0 && (
+          {showTagSuggestions && suggestedTags.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              className="flex items-center gap-2 mb-3"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-3 flex items-center gap-2 overflow-hidden"
             >
-              <span className="text-xs" style={{ color: '#9B9B8E' }}>推荐标签：</span>
-              {suggestedTags.map(tag => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleAddTag(tag)}
-                  className="px-2 py-0.5 rounded-full text-[11px] transition-all duration-150 hover:brightness-95"
-                  style={{
-                    backgroundColor: 'rgba(91, 126, 113, 0.1)',
-                    color: '#5B7E71',
-                    fontFamily: '"JetBrains Mono", monospace',
-                  }}
-                >
-                  + {tag}
-                </button>
-              ))}
+              <span className="text-xs flex-shrink-0" style={{ color: '#9B9B8E', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                推荐标签：
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      handleAddTag(tag);
+                      setShowTagSuggestions(false);
+                    }}
+                    className="px-2.5 py-[2px] rounded-full text-[11px] transition-all duration-150 hover:brightness-95"
+                    style={{
+                      backgroundColor: 'rgba(91, 126, 113, 0.12)',
+                      color: '#5B7E71',
+                      fontFamily: '"JetBrains Mono", "Courier New", monospace',
+                      letterSpacing: '0.08em',
+                    }}
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Thought textarea */}
-        <div className="mb-4">
-          <textarea
-            placeholder="此刻的想法...（可选）"
-            value={thought}
-            onChange={(e) => setThought(e.target.value)}
-            className="w-full px-4 py-3 rounded-[8px] outline-none transition-all duration-150 resize-none"
-            style={{
-              backgroundColor: '#F8F6F0',
-              border: '1px solid #E2E0D8',
-              color: '#2C2C2C',
-              minHeight: '80px',
-              fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif',
-              fontSize: '15px',
-              lineHeight: 1.65,
-            }}
-          />
-        </div>
-
-        {/* Tags input */}
-        <div className="mb-4">
+        {/* Tag input */}
+        <div className="mb-5">
           <div
             className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-[8px]"
             style={{
               backgroundColor: '#F8F6F0',
               border: '1px solid #E2E0D8',
-              minHeight: '40px',
+              minHeight: '42px',
             }}
             onClick={() => tagInputRef.current?.focus()}
           >
-            {tags.map(tag => (
+            {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px]"
+                className="inline-flex items-center gap-1 px-2.5 py-[2px] rounded-full text-[11px]"
                 style={{
                   backgroundColor: 'rgba(107, 143, 173, 0.1)',
                   color: '#6B8FAD',
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: '"JetBrains Mono", "Courier New", monospace',
+                  letterSpacing: '0.08em',
                 }}
               >
                 {tag}
-                <button type="button" onClick={() => handleRemoveTag(tag)}>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:opacity-70 transition-opacity"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -368,45 +384,40 @@ export default function ExcerptForm({ books, existingTags, editingExcerpt, onSav
             <input
               ref={tagInputRef}
               type="text"
-              value={tagInput}
-              onChange={(e) => {
-                setTagInput(e.target.value);
-                setShowTagSuggestions(true);
-              }}
-              onKeyDown={handleTagInputKeyDown}
-              onFocus={() => setShowTagSuggestions(true)}
               placeholder={tags.length === 0 ? '添加标签...' : ''}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagInputKeyDown}
               className="flex-1 min-w-[80px] bg-transparent outline-none text-sm"
               style={{
                 color: '#2C2C2C',
-                fontFamily: '"JetBrains Mono", monospace',
-                fontSize: '13px',
+                fontFamily: '"JetBrains Mono", "Courier New", monospace',
               }}
             />
           </div>
 
-          {/* Tag suggestions dropdown */}
+          {/* Tag autocomplete dropdown */}
           <AnimatePresence>
-            {showTagSuggestions && availableTagSuggestions.length > 0 && (
+            {tagInput && availableTagSuggestions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="mt-1 flex flex-wrap gap-1"
+                className="mt-1 rounded-[8px] overflow-hidden shadow-md"
+                style={{
+                  backgroundColor: '#F8F6F0',
+                  border: '1px solid #E2E0D8',
+                }}
               >
-                {availableTagSuggestions.map(tag => (
+                {availableTagSuggestions.map((tag) => (
                   <button
                     key={tag}
                     type="button"
                     onClick={() => handleAddTag(tag)}
-                    className="px-2 py-0.5 rounded-full text-[11px] transition-all duration-150 hover:brightness-95"
-                    style={{
-                      backgroundColor: 'rgba(155, 155, 142, 0.1)',
-                      color: '#9B9B8E',
-                      fontFamily: '"JetBrains Mono", monospace',
-                    }}
+                    className="w-full px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-black/5"
+                    style={{ color: '#2C2C2C' }}
                   >
-                    + {tag}
+                    {tag}
                   </button>
                 ))}
               </motion.div>
@@ -414,12 +425,12 @@ export default function ExcerptForm({ books, existingTags, editingExcerpt, onSav
           </AnimatePresence>
         </div>
 
-        {/* Submit buttons */}
+        {/* Action buttons */}
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-[8px] text-sm transition-all duration-150 hover:bg-black/5"
+            className="px-4 py-2 text-sm rounded-[8px] transition-all duration-150 hover:bg-black/5"
             style={{ color: '#6B6B6B' }}
           >
             取消
@@ -427,11 +438,11 @@ export default function ExcerptForm({ books, existingTags, editingExcerpt, onSav
           <button
             type="submit"
             disabled={!isValid}
-            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-[8px] text-sm font-medium text-white transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 active:scale-[0.97]"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-[10px] text-white text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 hover:scale-[1.02] active:scale-[0.97]"
             style={{ backgroundColor: '#5B7E71' }}
           >
             <Check className="w-4 h-4" />
-            {editingExcerpt ? '保存' : '添加摘录'}
+            {editingExcerpt ? '更新' : '落笔'}
           </button>
         </div>
       </form>
