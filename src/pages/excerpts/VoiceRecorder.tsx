@@ -1,151 +1,222 @@
-import { useState, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, Square, Loader2 } from 'lucide-react'
-
-type RecordingState = 'idle' | 'recording' | 'processing' | 'success'
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Mic, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface VoiceRecorderProps {
-  onTranscript: (text: string) => void
+  onTranscript: (text: string) => void;
 }
 
+type RecorderState = 'idle' | 'recording' | 'processing' | 'success';
+
 export default function VoiceRecorder({ onTranscript }: VoiceRecorderProps) {
-  const [state, setState] = useState<RecordingState>('idle')
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const [state, setState] = useState<RecorderState>('idle');
+  const [error, setError] = useState<string>('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  const startRecording = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('您的浏览器不支持语音输入')
-      return
+      setError('浏览器不支持语音识别');
+      return;
     }
-
-    const recognition = new SpeechRecognition()
-    recognition.lang = 'zh-CN'
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognitionRef.current = recognition
-
-    let finalTranscript = ''
-
-    recognition.onstart = () => setState('recording')
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'zh-CN';
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript
+          finalTranscript += event.results[i][0].transcript;
         }
       }
-    }
+      if (finalTranscript) {
+        onTranscript(finalTranscript);
+      }
+    };
 
     recognition.onerror = () => {
-      setState('idle')
-    }
+      setState('idle');
+      setError('识别失败，请重试');
+    };
 
     recognition.onend = () => {
-      if (finalTranscript) {
-        onTranscript(finalTranscript)
-        setState('success')
-        setTimeout(() => setState('idle'), 1500)
-      } else {
-        setState('idle')
+      if (state === 'recording') {
+        setState('processing');
+        setTimeout(() => {
+          setState('success');
+          setTimeout(() => setState('idle'), 1200);
+        }, 800);
       }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (state === 'recording') {
+      const timer = setTimeout(() => {
+        handleStop();
+      }, 10000);
+      return () => clearTimeout(timer);
     }
+  }, [state]);
 
-    recognition.start()
-  }, [onTranscript])
+  const handleStart = useCallback(() => {
+    setError('');
+    if (!recognitionRef.current) {
+      setError('浏览器不支持语音识别');
+      return;
+    }
+    try {
+      recognitionRef.current.start();
+      setState('recording');
+    } catch {
+      setError('无法启动录音');
+    }
+  }, []);
 
-  const stopRecording = useCallback(() => {
-    recognitionRef.current?.stop()
-    setState('processing')
-  }, [])
+  const handleStop = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setState('processing');
+    setTimeout(() => {
+      setState('success');
+      setTimeout(() => setState('idle'), 1200);
+    }, 800);
+  }, []);
+
+  const toggleRecording = () => {
+    if (state === 'idle' || state === 'success') {
+      handleStart();
+    } else if (state === 'recording') {
+      handleStop();
+    }
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <AnimatePresence mode="wait">
-        {state === 'idle' && (
-          <motion.button
-            key="idle"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            onClick={startRecording}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-[var(--accent-morandi)] text-white hover:opacity-90 transition-opacity"
-          >
-            <Mic size={16} />
-            语音输入
-          </motion.button>
+    <div className="flex flex-col items-center gap-2">
+      <button
+        type="button"
+        onClick={toggleRecording}
+        disabled={state === 'processing'}
+        className="relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200"
+        style={{
+          backgroundColor: state === 'recording' ? '#C47C7C' : state === 'success' ? '#7BAE7F' : '#5B7E71',
+          transform: state === 'idle' ? 'scale(1)' : undefined,
+        }}
+      >
+        {state === 'recording' && (
+          <>
+            <span
+              className="absolute inset-0 rounded-full"
+              style={{
+                backgroundColor: '#C47C7C',
+                animation: 'voicePulse 1.5s infinite',
+              }}
+            />
+            <span className="absolute inset-0 rounded-full" style={{ backgroundColor: '#C47C7C', animation: 'voicePulse 1.5s infinite 0.5s' }} />
+          </>
         )}
+        <span className="relative z-10">
+          <AnimatePresence mode="wait">
+            {state === 'success' ? (
+              <motion.div
+                key="check"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Check className="w-5 h-5 text-white" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mic"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Mic className="w-5 h-5 text-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </span>
+      </button>
 
+      <AnimatePresence>
         {state === 'recording' && (
           <motion.div
-            key="recording"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="flex items-center gap-3"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex flex-col items-center gap-2 overflow-hidden"
           >
-            {/* Pulsing red dot */}
-            <div className="relative">
-              <div className="w-3 h-3 rounded-full bg-[var(--error)]" />
-              <motion.div
-                className="absolute inset-0 rounded-full bg-[var(--error)]"
-                animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-            </div>
-
-            {/* Waveform bars */}
-            <div className="flex items-center gap-1 h-6">
+            <div className="flex items-end gap-[3px] h-6">
               {[0, 1, 2, 3, 4].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-1 rounded-full bg-[var(--error)]"
-                  animate={{ height: [4, 20, 8, 24, 6] }}
+                  className="w-[3px] rounded-full"
+                  style={{ backgroundColor: '#C47C7C' }}
+                  animate={{
+                    height: [8, 24, 12, 20, 10],
+                  }}
                   transition={{
                     duration: 0.8,
                     repeat: Infinity,
-                    delay: i * 0.1,
+                    repeatType: 'reverse',
+                    delay: i * 0.12,
                     ease: 'easeInOut',
                   }}
                 />
               ))}
             </div>
-
-            <button
-              onClick={stopRecording}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm bg-[var(--bg-card)] text-[var(--error)] border border-[var(--error)] hover:bg-[var(--error)] hover:text-white transition-colors"
-            >
-              <Square size={12} fill="currentColor" />
-              停止
-            </button>
-          </motion.div>
-        )}
-
-        {state === 'processing' && (
-          <motion.div
-            key="processing"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="flex items-center gap-2 text-[var(--text-secondary)]"
-          >
-            <Loader2 size={16} className="animate-spin" />
-            <span className="text-sm">识别中...</span>
-          </motion.div>
-        )}
-
-        {state === 'success' && (
-          <motion.div
-            key="success"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="flex items-center gap-2 text-[var(--success)]"
-          >
-            <span className="text-sm">✓ 识别完成</span>
+            <span className="text-xs" style={{ color: '#C47C7C', fontFamily: 'Inter, system-ui, sans-serif' }}>
+              正在聆听...
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {state === 'processing' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center gap-1"
+          >
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: '#6B6B6B' }}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
+              />
+            ))}
+            <span className="text-xs ml-1" style={{ color: '#6B6B6B', fontFamily: 'Inter, system-ui, sans-serif' }}>
+              正在识别...
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {error && (
+        <span className="text-xs" style={{ color: '#C47C7C' }}>{error}</span>
+      )}
+
+      <style>{`
+        @keyframes voicePulse {
+          0% { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+      `}</style>
     </div>
-  )
+  );
 }

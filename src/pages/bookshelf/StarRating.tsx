@@ -1,34 +1,39 @@
-import { Star } from 'lucide-react'
-import { useState } from 'react'
+import { Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StarRatingProps {
-  rating: number
-  onRate?: (rating: number) => void
-  size?: number
+  rating?: number;
+  onRate?: (rating: number) => void;
+  size?: number;
+  className?: string;
 }
 
-export default function StarRating({ rating, onRate, size = 16 }: StarRatingProps) {
-  const [hover, setHover] = useState(0)
-
+export default function StarRating({ rating = 0, onRate, size = 16, className }: StarRatingProps) {
   return (
-    <div className="flex gap-0.5">
+    <div className={cn('flex items-center gap-0.5', className)}>
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
+          type="button"
           onClick={() => onRate?.(star)}
-          onMouseEnter={() => setHover(star)}
-          onMouseLeave={() => setHover(0)}
-          className="transition-colors"
           disabled={!onRate}
+          className={cn(
+            'transition-transform',
+            onRate && 'hover:scale-110 cursor-pointer',
+            !onRate && 'cursor-default'
+          )}
         >
           <Star
             size={size}
-            fill={(hover || rating) >= star ? 'var(--accent-warm)' : 'transparent'}
-            stroke={(hover || rating) >= star ? 'var(--accent-warm)' : 'var(--text-muted)'}
-            strokeWidth={1.5}
+            className={cn(
+              'transition-colors',
+              star <= rating
+                ? 'fill-[#A67C52] text-[#A67C52]'
+                : 'fill-transparent text-[#9B9B8E]'
+            )}
           />
         </button>
       ))}
     </div>
-  )
+  );
 }
