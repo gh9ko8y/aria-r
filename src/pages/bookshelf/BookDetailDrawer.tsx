@@ -236,16 +236,15 @@ export default function BookDetailDrawer({
                     <p
                       className={cn(
                         'text-[14px] text-[#2C2C2C] leading-relaxed',
-                        !showFullDesc && 'line-clamp-4'
+                        !showFullDesc && 'line-clamp-6'
                       )}
-                      style={{ fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif' }}
                     >
                       {book.description}
                     </p>
-                    {book.description.length > 200 && (
+                    {book.description.length > 180 && (
                       <button
                         onClick={() => setShowFullDesc(!showFullDesc)}
-                        className="text-[12px] text-[#6B8FAD] mt-1 hover:underline"
+                        className="text-[13px] text-[#6B8FAD] mt-1 hover:underline cursor-pointer"
                       >
                         {showFullDesc ? '收起' : '展开'}
                       </button>
@@ -260,15 +259,15 @@ export default function BookDetailDrawer({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.45, duration: 0.3 }}
                   >
-                    <h4 className="text-[13px] font-medium text-[#2C2C2C] mb-2 flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 mb-2">
                       <Tag size={13} className="text-[#9B9B8E]" />
-                      标签
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
+                      <h4 className="text-[13px] font-medium text-[#2C2C2C]">标签</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                       {book.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-3 py-1 rounded-full text-[12px] bg-[#6B8FAD]/10 text-[#6B8FAD]"
+                          className="px-3 py-1 rounded-full text-[12px] bg-[#6B8FAD]/10 text-[#6B8FAD] hover:bg-[#6B8FAD]/18 transition-colors"
                         >
                           {tag}
                         </span>
@@ -284,76 +283,74 @@ export default function BookDetailDrawer({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.3 }}
                   >
-                    <h4 className="text-[13px] font-medium text-[#2C2C2C] mb-3 flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 mb-3">
                       <Quote size={13} className="text-[#9B9B8E]" />
-                      相关摘录 ({excerpts.length})
-                    </h4>
+                      <h4 className="text-[13px] font-medium text-[#2C2C2C]">摘录</h4>
+                      <span className="text-[11px] text-[#9B9B8E]">({excerpts.length})</span>
+                    </div>
                     <div className="space-y-3">
-                      {excerpts.map((excerpt) => (
-                        <div
+                      {excerpts.slice(0, 5).map((excerpt, idx) => (
+                        <motion.div
                           key={excerpt.id}
-                          className="bg-[#F0F0F0] rounded-[10px] p-3 border border-[#E2E0D8]"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.55 + idx * 0.05, duration: 0.3 }}
+                          className="bg-[#F0F0F0] rounded-[10px] p-4 border-l-[3px] border-[#5B7E71]"
                         >
-                          <p
-                            className="text-[14px] text-[#2C2C2C] italic leading-relaxed"
-                            style={{ fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif' }}
-                          >
-                            {excerpt.content}
+                          <p className="text-[14px] text-[#2C2C2C] italic leading-relaxed mb-2">
+                            "{excerpt.content}"
                           </p>
                           {excerpt.thought && (
-                            <p className="text-[12px] text-[#6B6B6B] mt-2 pl-3 border-l-2 border-[#E2E0D8]">
-                              {excerpt.thought}
-                            </p>
+                            <p className="text-[13px] text-[#6B6B6B]">{excerpt.thought}</p>
                           )}
-                        </div>
+                          {excerpt.page && (
+                            <p className="text-[11px] text-[#9B9B8E] mt-1.5">第 {excerpt.page} 页</p>
+                          )}
+                        </motion.div>
                       ))}
                     </div>
                   </motion.div>
                 )}
 
-                {/* Action Buttons */}
+                {/* Actions */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55, duration: 0.3 }}
-                  className="flex gap-3 pt-4 border-t border-[#E2E0D8]"
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                  className="pt-4 border-t border-[#E2E0D8] flex gap-3"
                 >
-                  {book.status === 'prelude' && (
-                    <button
-                      onClick={() => onStatusChange(book, 'andante')}
-                      className="flex-1 py-2.5 rounded-[10px] text-sm font-medium bg-[#5B7E71] text-white hover:brightness-105 transition-all"
-                    >
-                      开始阅读
-                    </button>
-                  )}
-                  {book.status === 'andante' && (
-                    <button
-                      onClick={() => onStatusChange(book, 'finale')}
-                      className="flex-1 py-2.5 rounded-[10px] text-sm font-medium bg-[#7BAE7F] text-white hover:brightness-105 transition-all"
-                    >
-                      标记完成
-                    </button>
-                  )}
-                  {book.status === 'finale' && (
-                    <button
-                      onClick={() => onStatusChange(book, 'andante')}
-                      className="flex-1 py-2.5 rounded-[10px] text-sm font-medium bg-[#6B8FAD] text-white hover:brightness-105 transition-all"
-                    >
-                      重新阅读
-                    </button>
-                  )}
+                  {/* Status Change */}
+                  <div className="flex gap-2">
+                    {(['prelude', 'andante', 'finale'] as ReadingStatus[]).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => onStatusChange(book, s)}
+                        className={cn(
+                          'px-3 py-1.5 rounded-[6px] text-[11px] font-medium transition-all cursor-pointer border',
+                          book.status === s
+                            ? `${statusConfig[s].bg} ${statusConfig[s].color} ${statusConfig[s].bg.replace('/12', '/30')}`
+                            : 'bg-transparent text-[#9B9B8E] border-[#E2E0D8] hover:border-[#D0CEC6]'
+                        )}
+                      >
+                        {statusConfig[s].label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex-1" />
+
                   <button
-                    onClick={() => onEdit(book)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-[10px] text-sm border border-[#E2E0D8] text-[#6B6B6B] hover:bg-[#F0F0F0] transition-all"
+                    onClick={() => { onClose(); onEdit(book); }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#6B8FAD] text-[#6B8FAD] rounded-[6px] text-[12px] font-medium hover:bg-[#6B8FAD]/5 transition-colors cursor-pointer"
                   >
-                    <Edit3 size={14} />
+                    <Edit3 size={12} />
                     编辑
                   </button>
                   <button
-                    onClick={() => onDelete(book)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-[10px] text-sm border border-[#E2E0D8] text-[#C47C7C] hover:bg-[#C47C7C]/10 transition-all"
+                    onClick={() => { onClose(); onDelete(book); }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[#C47C7C] rounded-[6px] text-[12px] font-medium hover:bg-[#C47C7C]/10 transition-colors cursor-pointer"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                     删除
                   </button>
                 </motion.div>

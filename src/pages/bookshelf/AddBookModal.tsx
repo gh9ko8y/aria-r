@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookOpen } from 'lucide-react';
+import { X, BookOpen, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Book, ReadingStatus } from '@/types';
 import { Input } from '@/components/ui/input';
@@ -279,54 +279,68 @@ export default function AddBookModal({ isOpen, onClose, onSave, editBook }: AddB
                 />
               </div>
 
-              {/* Status */}
+              {/* Status Selection */}
               <div>
                 <Label className="text-[13px] text-[#6B6B6B] mb-2 block">阅读状态</Label>
                 <div className="grid grid-cols-3 gap-3">
-                  {statusOptions.map((option) => {
-                    const colors = statusColors[option.key];
+                  {statusOptions.map((opt) => {
+                    const colors = statusColors[opt.key];
+                    const isActive = status === opt.key;
                     return (
                       <button
-                        key={option.key}
-                        onClick={() => setStatus(option.key)}
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setStatus(opt.key)}
                         className={cn(
-                          'flex flex-col items-center gap-1 p-3 rounded-[10px] border transition-all cursor-pointer',
-                          status === option.key
-                            ? `${colors.bg} ${colors.border} ring-2 ${colors.ring}`
-                            : 'bg-[#F0F0F0] border-[#E2E0D8] hover:border-[#D0CEC6]'
+                          'flex flex-col items-center gap-1 py-3 px-2 rounded-[10px] border-2 transition-all duration-200 cursor-pointer',
+                          isActive
+                            ? `${colors.bg} ${colors.border}`
+                            : 'border-[#E2E0D8] bg-[#F0F0F0] hover:border-[#D0CEC6]'
                         )}
                       >
-                        <span className={cn('text-sm font-medium', status === option.key ? colors.text : 'text-[#6B6B6B]')}>
-                          {option.label}
+                        <span
+                          className={cn('text-sm font-medium', isActive ? colors.text : 'text-[#6B6B6B]')}
+                          style={{ fontFamily: '"LXGW WenKai", "PingFang SC", "Microsoft YaHei", sans-serif' }}
+                        >
+                          {opt.label}
                         </span>
-                        <span className="text-[11px] text-[#9B9B8E]">{option.desc}</span>
+                        <span className="text-[11px] text-[#9B9B8E]">{opt.desc}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Rating - only for finale */}
+              {/* Rating (for finale) */}
               {status === 'finale' && (
-                <div>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
                   <Label className="text-[13px] text-[#6B6B6B] mb-2 block">评分</Label>
                   <StarRating rating={rating} onRate={setRating} size={24} />
-                </div>
+                </motion.div>
               )}
 
               {/* Tags */}
               <div>
-                <Label className="text-[13px] text-[#6B6B6B] mb-1.5 block">标签</Label>
+                <Label className="text-[13px] text-[#6B6B6B] mb-1.5 block">
+                  标签 <span className="text-[#9B9B8E] text-[11px]">（用逗号分隔）</span>
+                </Label>
                 <Input
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  placeholder="用逗号分隔多个标签"
+                  placeholder="文学, 小说, 经典..."
                   className="bg-[#F0F0F0] border-[#E2E0D8] rounded-[10px] focus-visible:ring-[#5B7E71]/30 text-sm"
                 />
                 {tagList.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {tagList.map((tag) => (
-                      <span key={tag} className="px-2.5 py-0.5 rounded-full text-[11px] bg-[#6B8FAD]/10 text-[#6B8FAD]">
+                      <span
+                        key={tag}
+                        className="px-2.5 py-0.5 rounded-full text-[11px] bg-[#6B8FAD]/10 text-[#6B8FAD]"
+                      >
                         {tag}
                       </span>
                     ))}
@@ -339,15 +353,16 @@ export default function AddBookModal({ isOpen, onClose, onSave, editBook }: AddB
             <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 px-6 py-4 bg-[#F8F6F0] border-t border-[#E2E0D8] rounded-b-2xl">
               <button
                 onClick={handleClose}
-                className="px-5 py-2.5 rounded-[10px] text-sm text-[#6B6B6B] border border-[#E2E0D8] hover:bg-[#F0F0F0] transition-all cursor-pointer"
+                className="px-4 py-2 text-sm text-[#6B6B6B] hover:text-[#2C2C2C] transition-colors cursor-pointer rounded-[10px] hover:bg-[#F0F0F0]"
               >
                 取消
               </button>
               <button
                 onClick={handleSubmit}
-                className="px-5 py-2.5 rounded-[10px] text-sm font-medium bg-[#5B7E71] text-white hover:brightness-105 active:scale-[0.97] transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2 bg-[#5B7E71] text-white rounded-[10px] text-sm font-medium hover:brightness-105 hover:scale-[1.02] active:scale-[0.97] transition-all cursor-pointer"
               >
-                {isEditing ? '保存' : '添加'}
+                <Edit3 size={14} />
+                落笔
               </button>
             </div>
           </motion.div>

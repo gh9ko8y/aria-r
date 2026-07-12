@@ -289,50 +289,59 @@ export default function Excerpts() {
               >
                 <option value="newest">最新</option>
                 <option value="oldest">最早</option>
-                <option value="book">按书籍</option>
+                <option value="book">书籍</option>
               </select>
             </div>
           </div>
 
           {/* Filter chips */}
-          <div className="flex flex-wrap gap-2">
-            {filterChips.map((chip) => (
-              <button
+          <div className="flex flex-wrap items-center gap-2">
+            {filterChips.map((chip, i) => (
+              <motion.button
                 key={chip.key}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.2 }}
                 onClick={() => setActiveFilter(chip.key)}
-                className="px-3.5 py-1.5 rounded-full text-sm transition-all duration-150"
+                className="px-3 py-[4px] rounded-full text-[11px] transition-all duration-150"
                 style={{
-                  backgroundColor: activeFilter === chip.key ? 'rgba(91,126,113,0.12)' : '#F0F0F0',
-                  color: activeFilter === chip.key ? '#5B7E71' : '#6B6B6B',
-                  border: activeFilter === chip.key ? '1px solid rgba(91,126,113,0.3)' : '1px solid #E2E0D8',
+                  backgroundColor: activeFilter === chip.key ? 'rgba(91, 126, 113, 0.12)' : 'rgba(107, 143, 173, 0.08)',
+                  color: activeFilter === chip.key ? '#5B7E71' : '#6B8FAD',
+                  fontFamily: '"JetBrains Mono", "Courier New", monospace',
+                  letterSpacing: '0.08em',
+                  lineHeight: 1.4,
                 }}
               >
                 {chip.label}
-              </button>
+              </motion.button>
             ))}
 
-            {/* Tag filters */}
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => handleTagClick(tag)}
-                className="px-3 py-1.5 rounded-full text-sm transition-all duration-150"
-                style={{
-                  backgroundColor: activeTagFilter === tag ? 'rgba(107,143,173,0.12)' : '#F0F0F0',
-                  color: activeTagFilter === tag ? '#6B8FAD' : '#6B6B6B',
-                  border: activeTagFilter === tag ? '1px solid rgba(107,143,173,0.3)' : '1px solid #E2E0D8',
-                  fontFamily: '"JetBrains Mono", "Courier New", monospace',
-                  fontSize: '12px',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {tag}
-              </button>
-            ))}
+            {/* Active tag filter pill */}
+            <AnimatePresence>
+              {activeTagFilter && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => setActiveTagFilter('')}
+                  className="inline-flex items-center gap-1 px-3 py-[4px] rounded-full text-[11px] transition-all duration-150"
+                  style={{
+                    backgroundColor: 'rgba(166, 124, 82, 0.12)',
+                    color: '#A67C52',
+                    fontFamily: '"JetBrains Mono", "Courier New", monospace',
+                    letterSpacing: '0.08em',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {activeTagFilter}
+                  <X className="w-3 h-3" />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
-        {/* Excerpt Form */}
+        {/* Add/Edit Form */}
         <AnimatePresence>
           {showForm && (
             <ExcerptForm
@@ -345,16 +354,36 @@ export default function Excerpts() {
           )}
         </AnimatePresence>
 
-        {/* Excerpts List */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-          className="space-y-4"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredExcerpts.length > 0 ? (
-              filteredExcerpts.map((excerpt, index) => (
+        {/* Excerpt List */}
+        {filteredExcerpts.length === 0 ? (
+          excerpts.length === 0 ? (
+            <EmptyState onAdd={handleAddNew} />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-24"
+            >
+              <p style={{ color: '#6B6B6B', fontFamily: '"Source Han Serif CN", "Songti SC", SimSun, serif' }}>
+                没有找到匹配的摘录
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveFilter('all');
+                  setActiveTagFilter('');
+                }}
+                className="mt-3 text-sm transition-colors duration-150 hover:underline"
+                style={{ color: '#6B8FAD' }}
+              >
+                清除筛选
+              </button>
+            </motion.div>
+          )
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AnimatePresence mode="popLayout">
+              {filteredExcerpts.map((excerpt, index) => (
                 <ExcerptCard
                   key={excerpt.id}
                   excerpt={excerpt}
@@ -365,19 +394,10 @@ export default function Excerpts() {
                   onTagClick={handleTagClick}
                   highlight={excerpt.id === newlyAddedId}
                 />
-              ))
-            ) : (
-              <EmptyState
-                hasFilters={!!searchQuery || activeFilter !== 'all' || !!activeTagFilter}
-                onClearFilters={() => {
-                  setSearchQuery('');
-                  setActiveFilter('all');
-                  setActiveTagFilter('');
-                }}
-              />
-            )}
-          </AnimatePresence>
-        </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
