@@ -41,6 +41,45 @@ export interface Excerpt {
   updatedAt?: string;
 }
 
+export interface Essay {
+  id: string;
+  title: string;
+  content: string;
+  coverImage?: string;
+  tags: string[];
+  relatedBookId?: string;
+  relatedExcerptId?: string;
+  mood?: string;
+  location?: string;
+  weather?: string;
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  nickname: string;
+  avatar: string;
+  gender: 'male' | 'female' | 'other' | '';
+  bio: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReadingLog {
+  id: string;
+  bookId: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  startPage?: number;
+  endPage?: number;
+  note?: string;
+  createdAt: string;
+}
+
 export interface Character {
   id: string;
   name: string;
